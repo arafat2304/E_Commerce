@@ -20,6 +20,7 @@ import Navbar from "../component/Header";
 import SliderBanner from "../component/BannerSlider";
 import Categories from "../component/Categories";
 import Products from "../component/ProductCard";
+import Footer from "../component/Footer";
 
 export default function Home() {
   return (
@@ -29,6 +30,7 @@ export default function Home() {
         <SliderBanner />
         <Categories />
         <Products />
+        <Footer />
       </main>
     </div>
   );

@@ -68,12 +68,15 @@
 // }
 
 import React from "react";
+import { useNavigate } from "react-router-dom";
 
-/**
- * Compact category strip. Icons should be in public/assets/categories/
- * Example files: fashion.png, electronics.png, bags.png ...
- */
+
 const cats = [
+  { name: "Fashion", img: "src/assets/cat-fashion.png" },
+  { name: "Mobiles", img: "src/assets/cat-electronics.png" },
+  { name: "Home", img: "src/assets/cat-decor.png" },
+  { name: "Beauty", img: "src/assets/cat-beauty.png" },
+  { name: "Grocery", img: "src/assets/cat-groceries.png" },
   { name: "Fashion", img: "src/assets/cat-fashion.png" },
   { name: "Mobiles", img: "src/assets/cat-electronics.png" },
   { name: "Home", img: "src/assets/cat-decor.png" },
@@ -83,15 +86,22 @@ const cats = [
 ];
 
 export default function Categories() {
+  const navigate = useNavigate();
   return (
     <div className="max-w-screen-2xl mx-auto px-4 md:px-8 mt-6">
-      <div className="bg-white rounded-lg border border-gray-100 shadow-sm py-3 px-3 flex gap-3 overflow-x-auto">
+      <div className="backdrop-blur-md bg-white/80 rounded-2xl shadow-lg p-4 flex gap-4 overflow-x-auto scrollbar-hide scroll-smooth">
         {cats.map((c) => (
-          <div key={c.name} className="flex-shrink-0 w-28 text-center cursor-pointer hover:shadow-md transition p-2 rounded">
-            <div className="w-16 h-16 mx-auto rounded-lg bg-gray-50 flex items-center justify-center mb-2">
+          <div
+            key={c.name}
+            onClick={() => navigate(`/category/${c.name.toLowerCase()}`)}
+            className="flex-shrink-0 w-24 flex flex-col items-center group transition"
+          >
+            <div className="w-16 h-16 rounded-full  bg-gradient-to-br from-orange-50 to-orange-100 flex items-center justify-center shadow-sm group-hover:ring-2 group-hover:ring-orange-400 group-hover:scale-105 duration-300">
               <img src={c.img} alt={c.name} className="w-10 h-10 object-contain" />
             </div>
-            <div className="text-sm font-medium">{c.name}</div>
+            <div className="text-xs mt-2 font-medium text-gray-700 group-hover:text-orange-500 transition">
+              {c.name}
+            </div>
           </div>
         ))}
       </div>

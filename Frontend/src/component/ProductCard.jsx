@@ -1,25 +1,6 @@
-// export function ProductCard({product}) {
-// return (
-// <div className="bg-white rounded-2xl shadow card-hover p-3 flex flex-col transition-transform duration-300 hover:-translate-y-1">
-// <div className="w-full h-44 rounded-lg overflow-hidden">
-// <img src={product.img} alt={product.title} className="w-full h-full object-cover" />
-// </div>
-// <div className="mt-3 flex-1">
-// <h4 className="text-sm font-medium">{product.title}</h4>
-// </div>
-// <div className="mt-2 flex items-center justify-between">
-// <div>
-// <div className="text-base font-semibold">₹{product.price}</div>
-// {product.mrp && <div className="text-xs text-gray-400 line-through">₹{product.mrp}</div>}
-// </div>
-// <div className="text-sm text-green-600">{product.discount}</div>
-// </div>
-// </div>
-// );
-// }
-
 import React from "react";
 import { FaStar, FaRegStar } from "react-icons/fa";
+import { useCart } from "../context/CartContext";
 
 /**
  * Products component: shows a deals horizontal scroll + product grid below

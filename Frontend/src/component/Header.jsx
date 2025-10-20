@@ -1,67 +1,11 @@
-// // Header.jsx
-// import React from 'react';
-
-
-// export function Header() {
-// return (
-// <header className="w-full bg-white/90 backdrop-blur-md shadow-md sticky top-0 z-50">
-//   <div className="max-w-screen-xl mx-auto flex items-center justify-between py-3 px-6">
-
-//     {/* Logo */}
-//     <h1 className="text-2xl font-extrabold tracking-tight text-gray-900">
-//       SHOPSTIC
-//     </h1>
-
-//     {/* Search Bar */}
-//     <div className="flex-1 mx-6 hidden md:block">
-//       <div className="relative">
-//         <input
-//           type="text"
-//           placeholder="Search for products..."
-//           className="w-full h-10 pl-4 pr-12 rounded-full border border-gray-200 focus:ring-2 focus:ring-green-400 outline-none transition-all shadow-sm"
-//         />
-//         <button className="absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1 text-sm rounded-full bg-green-500 hover:bg-green-600 text-white transition">
-//           Search
-//         </button>
-//       </div>
-//     </div>
-
-//     {/* Sign In Button */}
-//     <button className="px-6 py-2 rounded-full border border-gray-300 hover:border-gray-800 hover:bg-gray-900 hover:text-white transition font-medium shadow-sm">
-//       Sign In
-//     </button>
-
-//   </div>
-// </header>
-
-
-// );
-// }
-
 import React, { useEffect, useState } from "react";
 import { Menu, X, Search, ShoppingCart, User } from "lucide-react";
+import { useCart } from "../context/CartContext";
+import { Link } from "react-router-dom";
 
-// /**
-//  * Navbar.jsx
-//  * - Flipkart-like white navbar
-//  * - Amazon orange accents
-//  * - Floating glass effect
-//  * - Responsive side drawer (slides from left)
-//  *
-//  * Notes:
-//  * - This uses CSS variables defined in your global CSS / @theme:
-//  *   --color-amazon-orange
-//  *   --color-amazon-dark (optional)
-//  *   --shadow-float
-//  *
-//  * If you haven't added them, add to src/index.css:
-//  * @theme {
-//  *   --color-amazon-orange: #FF9900;
-//  *   --shadow-float: 0 10px 30px rgba(16,24,40,0.12);
-//  * }
-//  */
 
 export default function Navbar() {
+  const { cartItems } = useCart();
   const [scrolled, setScrolled] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
@@ -146,10 +90,12 @@ export default function Navbar() {
               </button>
 
               {/* Cart */}
+              <Link to="/cart" className="relative flex items-center gap-2">
               <button className="relative px-3 py-2 rounded-full hover:bg-gray-100 transition" aria-label="Cart">
                 <ShoppingCart className="w-6 h-6 text-gray-700" />
-                <span className="absolute -top-1 -right-1 bg-[#FF6A00] text-white text-xs px-1 rounded-md">3</span>
+                <span className="absolute -top-2 -right-3 bg-orange-500 text-white text-xs px-2 py-0.5 rounded-full shadow">{cartItems.length}</span>
               </button>
+              </Link>
 
               {/* Mobile search shortcut */}
               <button
