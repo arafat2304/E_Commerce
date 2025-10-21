@@ -45,6 +45,7 @@ export default function Navbar() {
             </button>
 
             {/* Logo */}
+            <Link to="/">
             <div className="flex items-center gap-3 mr-2">
               <div
                 className="w-10 h-10 rounded-sm flex items-center justify-center"
@@ -57,6 +58,7 @@ export default function Navbar() {
                 <div className="text-xs text-gray-500 -mt-0.5">Shop everything</div>
               </div>
             </div>
+            </Link>
 
             {/* Search - center (hidden on very small screens) */}
             <div className="flex-1 hidden sm:block">

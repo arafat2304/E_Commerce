@@ -25,13 +25,12 @@ import Footer from "../component/Footer";
 export default function Home() {
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navbar />
-      <main className="pt-4">
+      
         <SliderBanner />
         <Categories />
         <Products />
         <Footer />
-      </main>
+      
     </div>
   );
 }
