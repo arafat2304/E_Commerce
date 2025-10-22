@@ -77,7 +77,7 @@ export default function Products() {
   };
 
   return (
-    <div className="max-w-screen-2xl mx-auto px-4 md:px-8 mt-8">
+    <div className="max-w-screen-2xl mx-auto px-4 md:px-8 ">
       {/* Deals horizontal scroll */}
       <h3 className="text-lg font-semibold mb-3">Top deals</h3>
       <div className="flex gap-4 overflow-x-auto pb-2">

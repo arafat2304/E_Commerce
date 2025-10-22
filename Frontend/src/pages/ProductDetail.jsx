@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState,useEffect} from "react";
 import { useParams } from "react-router-dom";
 import { productsData } from "../Data.js";
 import { ShoppingCart, Star, CreditCard } from "lucide-react";
@@ -7,28 +7,35 @@ import RecommendedProducts from "../component/RecommendedProducts";
 export default function ProductDetail() {
   const { id } = useParams();
   const product = productsData.find((p) => p.id === Number(id));
-
-  // Mock multiple images (gallery)
-  const gallery = [
-    product?.img,
-    "https://source.unsplash.com/random/600x600?clothes",
-    "https://source.unsplash.com/random/600x600?apparel",
-    "https://source.unsplash.com/random/600x600?fashion",
-  ];
-
-  const [mainImg, setMainImg] = useState(gallery[0]);
+  const [mainImg, setMainImg] = useState();
   const [zoom, setZoom] = useState(false);
   const [selectedSize, setSelectedSize] = useState("");
 
+  // ✅ Scroll to top when product changes
+  // ✅ Reset gallery & scroll top when product changes
+   const gallery = [
+        product.img,
+        "https://source.unsplash.com/random/600x600?clothes",
+        "https://source.unsplash.com/random/600x600?apparel",
+        "https://source.unsplash.com/random/600x600?fashion",
+      ];
+  useEffect(() => {
+    if (product) {
+      setMainImg(gallery[0]);
+    }
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    setSelectedSize(""); // reset selected size
+  }, [id, product]);
+
   if (!product)
     return (
-      <div className="text-center py-20 text-gray-500">Product not found</div>
+      <div  className="text-center py-20 text-gray-500">Product not found</div>
     );
 
   const sizes = ["S", "M", "L", "XL", "XXL"];
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-10">
+    <div key={id} className="max-w-6xl mx-auto px-4 py-10">
       {/* ---------- Product Layout ---------- */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 bg-white p-6 rounded-xl shadow-sm border border-gray-100">
         {/* 🖼️ Image Gallery */}

@@ -1,5 +1,5 @@
-// src/components/RecommendedProducts.jsx
 import React from "react";
+import { Link } from "react-router-dom";
 import { productsData } from "../Data.js";
 
 export default function RecommendedProducts({ category, currentId }) {
@@ -15,9 +15,10 @@ export default function RecommendedProducts({ category, currentId }) {
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
         {filtered.map((rec) => (
-          <div
+          <Link
             key={rec.id}
-            className="bg-white rounded-lg border border-gray-100 p-3 hover:shadow-md cursor-pointer transition"
+            to={`/product/${rec.id}`}
+            className="bg-white rounded-lg border border-gray-100 p-3 hover:shadow-md cursor-pointer transition block"
           >
             <img
               src={rec.img}
@@ -30,7 +31,7 @@ export default function RecommendedProducts({ category, currentId }) {
             <div className="text-orange-600 font-semibold mt-1">
               {rec.price}
             </div>
-          </div>
+          </Link>
         ))}
       </div>
     </div>

@@ -89,7 +89,7 @@ export default function Categories() {
   const navigate = useNavigate();
   return (
     <div className="max-w-screen-2xl mx-auto px-4 md:px-8 mt-6">
-      <div className="backdrop-blur-md bg-white/80 rounded-2xl shadow-lg p-4 flex gap-4 overflow-x-auto scrollbar-hide scroll-smooth">
+      <div className="backdrop-blur-md bg-white/80 rounded-2xl shadow-lg p-4 flex gap-4 overflow-x-auto hide-scrollbar scroll-smooth">
         {cats.map((c) => (
           <div
             key={c.name}
