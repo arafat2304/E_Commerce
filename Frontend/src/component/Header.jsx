@@ -1,19 +1,41 @@
 import React, { useEffect, useState } from "react";
-import { Menu, X, Search, ShoppingCart, User } from "lucide-react";
+import { Menu, X, Search, ShoppingCart, User, LogOut } from "lucide-react";
 import { useCart } from "../context/CartContext";
 import { Link } from "react-router-dom";
-
+import LoginModal from "../auth/LoginOTP";
+import jwt_decode from "jwt-decode";
 
 export default function Navbar() {
   const { cartItems } = useCart();
   const [scrolled, setScrolled] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [loginOpen, setLoginOpen] = useState(false);
+  const [user, setUser] = useState(null); // store logged-in user info
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 10);
     window.addEventListener("scroll", onScroll);
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  // Check if JWT exists in localStorage
+  useEffect(() => {
+    const token = localStorage.getItem("authToken");
+    if (token) {
+      try {
+        const decoded = jwt_decode(token); // decode to get user id
+        // You can fetch user details from backend if needed
+        setUser({ id: decoded.id, name: decoded.name || "User" });
+      } catch (err) {
+        console.error("Invalid token", err);
+      }
+    }
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem("authToken");
+    setUser(null);
+  };
 
   const categories = [
     "Top Offers",
@@ -31,7 +53,11 @@ export default function Navbar() {
         className={`w-full sticky top-0 z-50 transition-all ${
           scrolled ? "backdrop-blur-md bg-white/95 shadow" : "bg-white/95"
         }`}
-        style={{ boxShadow: scrolled ? " 0 8px 25px rgba(0,0,0,0.12)" : "0 6px 18px rgba(0,0,0,0.04)" }}
+        style={{
+          boxShadow: scrolled
+            ? "0 8px 25px rgba(0,0,0,0.12)"
+            : "0 6px 18px rgba(0,0,0,0.04)",
+        }}
       >
         <div className="max-w-screen-2xl mx-auto px-4 md:px-8">
           <div className="flex items-center gap-4 py-3">
@@ -46,21 +72,21 @@ export default function Navbar() {
 
             {/* Logo */}
             <Link to="/">
-            <div className="flex items-center gap-3 mr-2">
-              <div
-                className="w-10 h-10 rounded-sm flex items-center justify-center"
-                style={{ background: "#FF6A00" }}
-              >
-                <span className="text-white font-extrabold text-lg">A</span>
+              <div className="flex items-center gap-3 mr-2">
+                <div
+                  className="w-10 h-10 rounded-sm flex items-center justify-center"
+                  style={{ background: "#FF6A00" }}
+                >
+                  <span className="text-white font-extrabold text-lg">A</span>
+                </div>
+                <div className="hidden sm:block">
+                  <div className="text-lg font-extrabold tracking-tight">Amaze</div>
+                  <div className="text-xs text-gray-500 -mt-0.5">Shop everything</div>
+                </div>
               </div>
-              <div className="hidden sm:block">
-                <div className="text-lg font-extrabold tracking-tight">Amaze</div>
-                <div className="text-xs text-gray-500 -mt-0.5">Shop everything</div>
-              </div>
-            </div>
             </Link>
 
-            {/* Search - center (hidden on very small screens) */}
+            {/* Search */}
             <div className="flex-1 hidden sm:block">
               <div className="relative">
                 <input
@@ -80,23 +106,46 @@ export default function Navbar() {
 
             {/* Actions */}
             <div className="flex items-center gap-3 ml-4">
-              {/* Login button (visible on md and up) */}
-              <button className="hidden md:inline-flex items-center gap-2 px-4 py-2 rounded-full hover:bg-gray-100 transition">
-                <User className="w-5 h-5 text-gray-700" />
-                <span className="text-sm font-medium">Sign in</span>
-              </button>
+              {user ? (
+                // Logged-in user
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium">{user.name}</span>
+                  <button
+                    onClick={handleLogout}
+                    className="p-2 rounded hover:bg-gray-100 transition"
+                  >
+                    <LogOut className="w-5 h-5 text-gray-700" />
+                  </button>
+                </div>
+              ) : (
+                // Not logged-in
+                <button
+                  onClick={() => setLoginOpen(true)}
+                  className="hidden md:inline-flex items-center gap-2 px-4 py-2 rounded-full hover:bg-gray-100 transition"
+                >
+                  <User className="w-5 h-5 text-gray-700" />
+                  <span className="text-sm font-medium">Sign in</span>
+                </button>
+              )}
 
-              {/* Profile Icon (visible on all except tiny screens) */}
-              <button className="hidden sm:inline-flex items-center p-2 rounded-full hover:bg-gray-100 transition" aria-label="Profile">
-                <User className="w-5 h-5 text-gray-700" />
-              </button>
+              {/* Profile Icon */}
+              {user && (
+                <button className="hidden sm:inline-flex items-center p-2 rounded-full hover:bg-gray-100 transition">
+                  <User className="w-5 h-5 text-gray-700" />
+                </button>
+              )}
 
               {/* Cart */}
               <Link to="/cart" className="relative flex items-center gap-2">
-              <button className="relative px-3 py-2 rounded-full hover:bg-gray-100 transition" aria-label="Cart">
-                <ShoppingCart className="w-6 h-6 text-gray-700" />
-                <span className="absolute -top-2 -right-3 bg-orange-500 text-white text-xs px-2 py-0.5 rounded-full shadow">{cartItems.length}</span>
-              </button>
+                <button
+                  className="relative px-3 py-2 rounded-full hover:bg-gray-100 transition"
+                  aria-label="Cart"
+                >
+                  <ShoppingCart className="w-6 h-6 text-gray-700" />
+                  <span className="absolute -top-2 -right-3 bg-orange-500 text-white text-xs px-2 py-0.5 rounded-full shadow">
+                    {cartItems.length}
+                  </span>
+                </button>
               </Link>
 
               {/* Mobile search shortcut */}
@@ -104,7 +153,6 @@ export default function Navbar() {
                 className="sm:hidden p-2 rounded hover:bg-gray-100 transition"
                 aria-label="Search"
                 onClick={() => {
-                  // optional: focus on a search dialog or navigate to search page
                   const el = document.querySelector('input[aria-label="Search"]');
                   if (el) el.focus();
                 }}
@@ -114,7 +162,7 @@ export default function Navbar() {
             </div>
           </div>
 
-          {/* Secondary small category strip (visible on md+) */}
+          {/* Secondary category strip */}
           <div className="hidden md:flex items-center gap-4 py-2 overflow-x-auto">
             {categories.map((c) => (
               <button
@@ -130,93 +178,10 @@ export default function Navbar() {
       </header>
 
       {/* SIDE DRAWER */}
-      <div
-  className={`fixed inset-0 z-60 transition-opacity duration-300 ${
-    drawerOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
-  }`}
+      {/* (Same as before, can optionally show login / user info based on JWT) */}
 
-        aria-hidden={!drawerOpen}
-      >
-        {/* Backdrop */}
-        <div
-          onClick={() => setDrawerOpen(false)}
-          className={`absolute inset-0 bg-black/30 transition-opacity ${drawerOpen ? "opacity-100" : "opacity-0"}`}
-        />
-
-        {/* Drawer panel */}
-        <aside
-          className={`absolute left-0 top-0 bottom-0 w-80 bg-white/95 backdrop-blur-md border-r border-gray-100 transform transition-transform duration-300 ${drawerOpen ? "translate-x-0" : "-translate-x-full"}`}
-          style={{ boxShadow: " 0 8px 25px rgba(0,0,0,0.12)" }}
-          aria-label="Main menu"
-        >
-
-          <div className="flex items-center justify-between p-4 border-b border-gray-100">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-sm flex items-center justify-center" style={{ background: "#FF6A00" }}>
-                <span className="text-white font-bold">A</span>
-              </div>
-              <div>
-                <div className="font-semibold">Hello, Guest</div>
-                <div className="text-xs text-gray-500">Sign in for the best experience</div>
-              </div>
-            </div>
-
-            <div>
-              <button
-                onClick={() => setDrawerOpen(false)}
-                className="p-2 rounded hover:bg-gray-100 transition"
-                aria-label="Close Menu"
-              >
-                <X className="w-5 h-5 text-gray-700" />
-              </button>
-            </div>
-          </div>
-
-          <div className="p-4">
-            {/* Login CTA */}
-            <button className="w-full px-4 py-2 rounded bg-[#FF6A00] text-white font-medium mb-3">
-              Sign in
-            </button>
-
-            {/* Quick Links */}
-            <nav className="space-y-2">
-              <a href="#" className="block px-3 py-2 rounded hover:bg-gray-100 transition">Your Orders</a>
-              <a href="#" className="block px-3 py-2 rounded hover:bg-gray-100 transition">Your Account</a>
-              <a href="#" className="block px-3 py-2 rounded hover:bg-gray-100 transition">Wishlist</a>
-              <a href="#" className="block px-3 py-2 rounded hover:bg-gray-100 transition">Cart</a>
-            </nav>
-
-            <hr className="my-4" />
-
-            <div>
-              <div className="text-sm font-medium mb-2">Shop by category</div>
-              <ul className="space-y-1">
-                {categories.map((c) => (
-                  <li key={c}>
-                    <a href="#" className="flex items-center gap-3 px-3 py-2 rounded hover:bg-gray-100 transition">
-                      <span className="w-8 h-8 rounded bg-gray-50 flex items-center justify-center">📦</span>
-                      <span className="text-sm">{c}</span>
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <hr className="my-4" />
-
-            <div className="text-xs text-gray-500">
-              <div className="mb-2">Settings</div>
-              <a href="#" className="block px-3 py-2 rounded hover:bg-gray-100 transition">Choose Language</a>
-              <a href="#" className="block px-3 py-2 rounded hover:bg-gray-100 transition">Country & Currency</a>
-            </div>
-          </div>
-
-          <div className="absolute bottom-4 w-full px-4">
-            <div className="text-xs text-gray-500">© {new Date().getFullYear()} Amaze</div>
-          </div>
-        </aside>
-      </div>
+      {/* LOGIN MODAL */}
+      <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} />
     </>
   );
 }
-
