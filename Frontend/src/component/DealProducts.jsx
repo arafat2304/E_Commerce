@@ -55,25 +55,35 @@ const DealProducts = ({ limit = 6 }) => {
   ];
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
       {products.slice(0, limit).map((p) => (
         <div
           key={p.id}
-          className="bg-white border rounded-xl shadow-sm hover:shadow-lg transition p-3 cursor-pointer group"
+          className="flex flex-col justify-between bg-white rounded-2xl border border-gray-200 hover:border-orange-400 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 p-4 cursor-pointer"
         >
-          <img
-            src={p.img}
-            alt={p.name}
-            className="w-full h-40 object-contain group-hover:scale-105 transition-transform duration-300"
-          />
-          <div className="mt-3">
-            <p className="font-medium text-gray-900">{p.name}</p>
-            <p className="text-orange-600 font-semibold">{p.price}</p>
-            <p className="text-xs text-gray-500">{p.category}</p>
+          {/* Product Image */}
+          <div className="w-full h-44 flex items-center justify-center bg-gray-50 rounded-lg overflow-hidden">
+            <img
+              src={p.img}
+              alt={p.name}
+              className="max-h-36 object-contain group-hover:scale-105 transition-transform duration-300"
+            />
           </div>
-          <button className="mt-2 w-full flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-600 text-white py-2 rounded-lg transition">
-            <ShoppingCart size={18} /> Add to Cart
-          </button>
+
+          {/* Product Details */}
+          <div className="mt-4 flex flex-col flex-grow justify-between">
+            <div>
+              <p className="font-semibold text-gray-900 text-sm line-clamp-2 mb-1">
+                {p.name}
+              </p>
+              <p className="text-orange-600 font-bold text-lg">{p.price}</p>
+              <p className="text-xs text-gray-500">{p.category}</p>
+            </div>
+
+            <button className="mt-3 w-full flex items-center justify-center gap-2 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-medium py-2.5 rounded-lg transition-all duration-300 shadow-md hover:shadow-lg">
+              <ShoppingCart size={18} /> Add to Cart
+            </button>
+          </div>
         </div>
       ))}
     </div>
