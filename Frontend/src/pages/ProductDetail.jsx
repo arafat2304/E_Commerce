@@ -1,47 +1,61 @@
-import React, { useState,useEffect} from "react";
-import { useParams } from "react-router-dom";
-import { productsData } from "../Data.js";
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import { ShoppingCart, Star, CreditCard } from "lucide-react";
 import RecommendedProducts from "../component/RecommendedProducts";
+import AddReview from "../component/AddReview";
+import ProductReviews from "../component/ProductReviews";
+import toast from "react-hot-toast";
+import  { useReturn } from "../context/ReturnContext"; // ✅ NEW
 
 export default function ProductDetail() {
   const { id } = useParams();
-  const product = productsData.find((p) => p.id === Number(id));
-  const [mainImg, setMainImg] = useState();
+  const navigate = useNavigate();
+  
+  const { openReturnModal } = useReturn(); // ⭐ NEW
+
+  const [product, setProduct] = useState(null);
+  const [mainImg, setMainImg] = useState("");
   const [zoom, setZoom] = useState(false);
   const [selectedSize, setSelectedSize] = useState("");
+  const [loading, setLoading] = useState(true);
 
-  // ✅ Scroll to top when product changes
-  // ✅ Reset gallery & scroll top when product changes
-   const gallery = [
-        product.img,
-        "https://source.unsplash.com/random/600x600?clothes",
-        "https://source.unsplash.com/random/600x600?apparel",
-        "https://source.unsplash.com/random/600x600?fashion",
-      ];
+  // Load product
   useEffect(() => {
-    if (product) {
-      setMainImg(gallery[0]);
-    }
+    const fetchProduct = async () => {
+      try {
+        const res = await fetch(`http://localhost:5000/api/shopproduct/${id}`);
+        const data = await res.json();
+        setProduct(data);
+        if (data.images && data.images.length > 0) setMainImg(data.images[0]);
+      } catch (err) {
+        console.error("Error fetching product:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProduct();
     window.scrollTo({ top: 0, behavior: "smooth" });
-    setSelectedSize(""); // reset selected size
-  }, [id, product]);
+  }, [id]);
+
+  if (loading)
+    return <div className="text-center py-20 text-gray-500">Loading product...</div>;
 
   if (!product)
-    return (
-      <div  className="text-center py-20 text-gray-500">Product not found</div>
-    );
+    return <div className="text-center py-20 text-gray-500">Product not found</div>;
 
   const sizes = ["S", "M", "L", "XL", "XXL"];
+  const gallery = product.images?.length > 0 ? product.images : ["/placeholder.png"];
+
 
   return (
-    <div key={id} className="max-w-6xl mx-auto px-4 py-10">
+    <div className="max-w-6xl mx-auto px-4 py-10">
       {/* ---------- Product Layout ---------- */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+      <div className="flex flex-col md:grid md:grid-cols-2 gap-8 bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+
         {/* 🖼️ Image Gallery */}
         <div className="flex flex-col md:flex-row gap-4">
           {/* Thumbnails */}
-          <div className="flex md:flex-col gap-3 justify-center md:justify-start">
+          <div className="flex md:flex-col gap-3 justify-center md:justify-start overflow-x-auto">
             {gallery.map((img, i) => (
               <img
                 key={i}
@@ -76,15 +90,25 @@ export default function ProductDetail() {
           <h2 className="text-2xl font-semibold mb-2 text-gray-900">
             {product.title}
           </h2>
+          <p className="text-sm text-gray-600 mb-1">
+            Sold by:
+            <span className="font-medium text-gray-800">
+              {product.shopkeeperId?.name || "Shopkeeper"}
+            </span>
+          </p>
+
           <p className="text-lg text-gray-600 mb-1">
-            Category:{" "}
+            Category:
             <span className="capitalize text-gray-800 font-medium">
               {product.category}
             </span>
           </p>
 
           <div className="text-3xl font-bold text-orange-600 mb-2">
-            {product.price}
+            ₹{product.newPrice}
+            <span className="text-lg line-through text-gray-400 ml-2">
+              ₹{product.oldPrice}
+            </span>
           </div>
 
           <div className="text-gray-500 mb-4 flex items-center gap-1">
@@ -105,13 +129,11 @@ export default function ProductDetail() {
           </div>
 
           <p className="text-gray-700 mb-6 leading-relaxed">
-            This premium-quality {product.category} product offers unmatched
-            durability, style, and comfort. Whether for work or daily use, it’s
-            designed to fit seamlessly into your lifestyle.
+            {product.description || "No detailed description available."}
           </p>
 
-          {/* 👕 Size Selector — visible for fashion items */}
-          {product.category.toLowerCase() === "fashion" && (
+          {/* 👕 Size Selector */}
+          {product?.category?.toLowerCase() === "fashion" && (
             <div className="mb-6">
               <h4 className="font-medium mb-2">Select Size</h4>
               <div className="flex gap-3 flex-wrap">
@@ -129,23 +151,23 @@ export default function ProductDetail() {
                   </button>
                 ))}
               </div>
-              {selectedSize && (
-                <p className="text-sm text-gray-500 mt-1">
-                  Selected size:{" "}
-                  <span className="font-semibold">{selectedSize}</span>
-                </p>
-              )}
             </div>
           )}
 
           {/* 🛒 Buttons */}
-          <div className="flex gap-3">
-            <button className="bg-orange-600 hover:bg-orange-700 text-white px-6 py-3 rounded-lg font-medium flex items-center gap-2 transition">
+          <div className="flex flex-col sm:flex-row gap-3">
+            <button
+               onClick={() => openReturnModal(product, "add")}
+              className="bg-orange-600 hover:bg-orange-700 text-white px-6 py-3 rounded-lg font-medium flex items-center justify-center gap-2 transition"
+            >
               <ShoppingCart size={20} />
               Add to Cart
             </button>
 
-            <button className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium flex items-center gap-2 transition">
+            <button
+               onClick={() => openReturnModal(product, "buy")}
+              className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium flex items-center justify-center gap-2 transition"
+            >
               <CreditCard size={20} />
               Buy Now
             </button>
@@ -153,77 +175,11 @@ export default function ProductDetail() {
         </div>
       </div>
 
-      {/* ---------- Reviews Section ---------- */}
-      <div className="mt-12 bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-        <h3 className="text-xl font-semibold mb-4">Customer Reviews</h3>
+      <hr className="my-6" />
 
-        {/* Mock Reviews */}
-        <div className="space-y-6">
-          {[
-            {
-              name: "Ravi Kumar",
-              rating: 5,
-              comment:
-                "Excellent quality and fast delivery! The product looks even better than pictures.",
-            },
-            {
-              name: "Sneha Patel",
-              rating: 4,
-              comment:
-                "Very comfortable and stylish. Worth the price. Would definitely recommend!",
-            },
-          ].map((r, i) => (
-            <div key={i} className="border-b border-gray-100 pb-4">
-              <div className="flex items-center gap-2 mb-1">
-                <h4 className="font-semibold text-gray-800">{r.name}</h4>
-                <div className="flex">
-                  {[...Array(5)].map((_, j) => (
-                    <Star
-                      key={j}
-                      size={16}
-                      className={`${
-                        j < r.rating
-                          ? "text-yellow-500 fill-yellow-500"
-                          : "text-gray-300"
-                      }`}
-                    />
-                  ))}
-                </div>
-              </div>
-              <p className="text-gray-600">{r.comment}</p>
-            </div>
-          ))}
-        </div>
-
-        {/* Add Review Form */}
-        <div className="mt-6">
-          <h4 className="text-lg font-semibold mb-2">Write a Review</h4>
-          <form
-            onSubmit={(e) => e.preventDefault()}
-            className="space-y-3 max-w-md"
-          >
-            <input
-              type="text"
-              placeholder="Your name"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500"
-            />
-            <textarea
-              placeholder="Share your experience..."
-              rows="3"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500"
-            />
-            <button
-              type="submit"
-              className="bg-orange-600 hover:bg-orange-700 text-white px-5 py-2 rounded-lg font-medium"
-            >
-              Submit Review
-            </button>
-          </form>
-        </div>
-      </div>
-
-      {/* ---------- Recommended Products ---------- */}
-      <RecommendedProducts category={product.category} currentId={product.id} />
+      <AddReview productId={product._id} onReviewAdded={() => window.location.reload()} />
+      <ProductReviews productId={product._id} />
+      <RecommendedProducts category={product.category} currentId={product._id} />
     </div>
   );
 }

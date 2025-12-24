@@ -1,14 +1,14 @@
-// src/components/CategorieProductCard.jsx
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { useCart } from "../context/CartContext";
+import { useReturn } from "../context/ReturnContext";
+import { ShoppingCart, X } from "lucide-react";
 
 export default function CategorieProductCard({ item }) {
-  const { addToCart } = useCart();
+  const { openReturnModal } = useReturn(); // ⭐ NEW
 
   const discount =
-    item.oldPrice && item.price
-      ? Math.round(((item.oldPrice - item.price) / item.oldPrice) * 100)
+    item.oldPrice && item.newPrice
+      ? Math.round(((item.oldPrice - item.newPrice) / item.oldPrice) * 100)
       : null;
 
   return (
@@ -20,11 +20,11 @@ export default function CategorieProductCard({ item }) {
         </div>
       )}
 
-      {/* Clickable section */}
-      <Link to={`/product/${item.id}`}>
+      {/* Product Image & Info */}
+      <Link to={`/product/${item._id}`}>
         <div className="h-52 bg-gray-50 flex items-center justify-center overflow-hidden">
           <img
-            src={item.img}
+            src={item.images}
             alt={item.title}
             className="h-full object-contain p-2 transition-transform duration-300 group-hover:scale-105"
           />
@@ -37,7 +37,7 @@ export default function CategorieProductCard({ item }) {
 
           <div className="flex items-center justify-between mt-1">
             <p className="text-lg font-bold text-orange-600">
-              ₹{item.price?.toLocaleString()}
+              ₹{item.newPrice?.toLocaleString()}
             </p>
             {item.oldPrice && (
               <p className="text-xs line-through text-gray-400">
@@ -55,13 +55,15 @@ export default function CategorieProductCard({ item }) {
         </div>
       </Link>
 
-      {/* Add to cart button */}
+      {/* Add to Cart Button */}
       <button
-        onClick={() => addToCart(item)}
-        className="m-3 w-[calc(100%-1.5rem)] py-2 text-sm font-medium border border-gray-300 rounded-lg hover:bg-orange-500 hover:text-white transition"
+        onClick={()=>openReturnModal(item,"add")}
+        className="m-3 flex items-center justify-center gap-2 w-[calc(100%-1.5rem)] py-2 text-sm font-medium border border-gray-300 rounded-lg hover:bg-orange-500 hover:text-white transition"
       >
+        <ShoppingCart className="w-4 h-4" />
         Add to Cart
       </button>
+          
     </div>
   );
 }

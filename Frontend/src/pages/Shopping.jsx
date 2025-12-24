@@ -2,9 +2,11 @@ import React from "react";
 import Navbar from "../component/Header";
 import SliderBanner from "../component/BannerSlider";
 import Categories from "../component/Categories";
-import Products from "../component/ProductCard";
+import LimitedDealPreview from "../component/LimitedDealPreview";
 import Footer from "../component/Footer";
-import CheapDealProduct from "../component/CheapDealProduct"
+// import CheapDealProduct from "../component/CheapDealProduct";
+import CheapestDeal from "../component/CheapestDeal";
+import BestDeal from "../component/BestDeal";
 
 export default function Shopping() {
   return (
@@ -12,8 +14,9 @@ export default function Shopping() {
       
         <SliderBanner />
         <Categories />
-        <CheapDealProduct/>
-        <Products />
+        <CheapestDeal/>
+        <BestDeal/>
+        <LimitedDealPreview />
         <Footer />
       
     </div>

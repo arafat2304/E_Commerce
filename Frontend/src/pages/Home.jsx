@@ -1,31 +1,39 @@
-import DealProducts from "../component/DealProducts";
-import RestaurantPreview from "../component/RestaurantPreview";
+import React from "react";
 import HeroSection from "../component/HeroSection";
-import SliderBanner from "../component/BannerSlider";
-import CategoryQuickLinks from "../component/CategoryQuickLinks";
+import RestaurantPreview from "../component/RestaurantPreview";
 import Footer from "../component/Footer";
+import TrendingDeal from "../component/TrendingDeal";
+import CheapestDeal from "../component/CheapestDeal";
+import BestDeal from "../component/BestDeal";
+import { useNavigate } from "react-router-dom";
+import { UtensilsCrossed } from "lucide-react";
 
 export default function Home() {
+  const navigate = useNavigate();
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* 1️⃣ 2 Banner Hero Section */}
+    <div >
       <HeroSection />
+      <TrendingDeal />
+      <CheapestDeal />
+      <RestaurantPreview />
 
-      {/* 2️⃣ Trending Shopping */}
-      <section className="max-w-7xl mx-auto px-4 py-8">
-        <h2 className="text-2xl font-semibold mb-4">🔥 Trending in Shopping</h2>
-        <DealProducts limit={4} />
-      </section>
+      {/* 🍽️ Mobile Friendly Explore Restaurants Button */}
+      <div className="w-full px-4 sm:px-6 mt-8 mb-5">
+        <button
+          onClick={() => navigate("/food/restaurants")}
+          className="w-full flex items-center justify-center gap-2 sm:gap-3 
+                     bg-gradient-to-r from-orange-500 via-orange-600 to-orange-700
+                     text-white font-semibold rounded-xl 
+                     py-3 sm:py-3.5 text-sm sm:text-base 
+                     shadow-md hover:shadow-lg transition-all duration-300
+                     active:scale-95"
+        >
+          <UtensilsCrossed className="w-4 h-4 sm:w-5 sm:h-5" />
+          Explore Restaurants
+        </button>
+      </div>
 
-      {/* 3️⃣ Popular Restaurants */}
-      <section className="bg-orange-50 py-8">
-        <div className="max-w-7xl mx-auto px-4">
-          <h2 className="text-2xl font-semibold mb-4">🍕 Popular Restaurants</h2>
-          <RestaurantPreview />
-        </div>
-      </section>
-
-      {/* 🔚 Footer */}
       <Footer />
     </div>
   );

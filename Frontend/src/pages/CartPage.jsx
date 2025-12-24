@@ -1,47 +1,65 @@
-import { useCart } from "../context/CartContext";
-import { Link } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 export default function CartPage() {
-  const { cartItems } = useCart();
+  const [cart, setCart] = useState(null);
+  const navigate = useNavigate();
 
-  const total = cartItems.reduce((acc, item) => acc + item.price, 0);
+  useEffect(() => {
+    const token = localStorage.getItem("authToken");
+    if (!token) return navigate("/login");
+
+    axios
+      .get("http://localhost:5000/api/cart", {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      .then((res) => setCart(res.data.data))
+      .catch((err) => console.error(err));
+  }, []);
+
+  if (!cart) return <p className="text-center text-gray-500">Loading...</p>;
+
+  const total = cart.items.reduce(
+    (sum, item) => sum + item.foodId.price * item.quantity,
+    0
+  );
 
   return (
-    <div className="max-w-screen-lg mx-auto px-6 py-6">
-      <h1 className="text-2xl font-semibold mb-4">Your Cart</h1>
-
-      {cartItems.length === 0 ? (
-        <div className="text-center py-10">
-          <p className="text-gray-600">Your cart is empty.</p>
-          <Link to="/" className="mt-4 inline-block px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600">
-            Continue Shopping
-          </Link>
-        </div>
+    <div className="min-h-screen bg-white text-black p-6">
+      <h1 className="text-2xl font-bold mb-4 text-center">🛒 Your Cart</h1>
+      {cart.items.length === 0 ? (
+        <p className="text-center text-gray-600">Your cart is empty</p>
       ) : (
-        <>
-          <div className="flex flex-col gap-4">
-            {cartItems.map((item, i) => (
-              <div key={i} className="flex gap-4 border rounded-lg p-3 bg-white shadow-sm">
-                <img src={item.img} alt={item.title} className="w-20 h-20 object-contain" />
-                <div className="flex-1">
-                  <h2 className="text-base font-medium">{item.title}</h2>
-                  <p className="text-orange-600 font-semibold text-lg">₹{item.price}</p>
-                </div>
-                <button className="text-sm text-red-500 hover:underline">Remove</button>
+        <div className="max-w-2xl mx-auto">
+          {cart.items.map((item) => (
+            <div
+              key={item.foodId._id}
+              className="flex justify-between items-center border-b py-3"
+            >
+              <div>
+                <p className="font-medium">{item.foodId.name}</p>
+                <p className="text-sm text-gray-500">
+                  ₹{item.foodId.price} × {item.quantity}
+                </p>
               </div>
-            ))}
+              <p className="font-semibold">
+                ₹{item.foodId.price * item.quantity}
+              </p>
+            </div>
+          ))}
+          <div className="mt-6 text-right font-bold text-lg">
+            Total: ₹{total}
           </div>
-
-          <div className="mt-6 flex justify-between items-center border-t pt-4">
-            <p className="text-lg font-semibold">
-              Total: <span className="text-orange-600">₹{total.toLocaleString()}</span>
-            </p>
-            <button className="px-5 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
-              Proceed to Checkout
-            </button>
-          </div>
-        </>
+        </div>
       )}
+
+      <button
+        onClick={() => navigate(-1)}
+        className="mt-6 bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded w-full md:w-auto mx-auto block"
+      >
+        ← Back
+      </button>
     </div>
   );
 }

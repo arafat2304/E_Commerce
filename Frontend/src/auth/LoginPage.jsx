@@ -1,64 +1,46 @@
-// src/components/LoginModal.jsx
+// src/pages/LoginPage.jsx
 import React, { useState } from "react";
 import axios from "axios";
-import { X } from "lucide-react";
 import toast from "react-hot-toast";
 import UserDetailsForm from "../component/UserDetailsForm";
 
-export default function LoginModal({ open, onClose }) {
+export default function LoginPage() {
   const [step, setStep] = useState("number"); // 'number' | 'otp' | 'details'
   const [phone, setPhone] = useState("");
   const [otp, setOtp] = useState("");
   const [loading, setLoading] = useState(false);
 
-  if (!open) return null;
-
-  // Send OTP
+  // 1️⃣ Send OTP
   const handleSendOtp = async () => {
-    if (!phone || phone.length !== 10) {
-      alert("Please enter a valid 10-digit phone number");
-      return;
-    }
-
+    if (!phone || phone.length !== 10) return alert("Enter valid 10-digit phone");
     try {
       setLoading(true);
-      const res = await axios.post("http://localhost:5000/api/auth/send-otp", {
-        phone,
-      });
-
+      const res = await axios.post("http://localhost:5000/api/auth/send-otp", { phone });
       if (res.data.success) {
-        toast.success("OTP sent successfully!");
+        toast.success("OTP sent!");
         setStep("otp");
-      } else {
-        alert(res.data.message || "Failed to send OTP");
       }
     } catch (err) {
       console.error(err);
-      alert("Error while sending OTP");
+      alert("Failed to send OTP");
     } finally {
       setLoading(false);
     }
   };
 
-  // Verify OTP
+  // 2️⃣ Verify OTP
   const handleVerifyOtp = async () => {
     if (!otp) return alert("Enter OTP");
-
     try {
       setLoading(true);
-      const res = await axios.post("http://localhost:5000/api/auth/verify-otp", {
-        phone,
-        otp,
-      });
-
+      const res = await axios.post("http://localhost:5000/api/auth/verify-otp", { phone, otp });
       if (res.data.success) {
-        localStorage.setItem("authToken", res.data.token); // optional
+        localStorage.setItem("authToken", res.data.token); // save JWT
         if (res.data.needDetails) {
-          // first-time signup
           setStep("details");
         } else {
           toast.success("Login successful!");
-          onClose(); // existing user, close modal
+          window.location.href = "/account"; // redirect existing user
         }
       } else {
         alert(res.data.message || "Invalid OTP");
@@ -71,10 +53,16 @@ export default function LoginModal({ open, onClose }) {
     }
   };
 
+  // 3️⃣ Handle first-time details completion
+  const handleDetailsComplete = () => {
+    toast.success("Signup complete!");
+    window.location.href = "/account"; // redirect to account page
+  };
+
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl w-full max-w-4xl overflow-hidden flex shadow-lg">
-        {/* Left Poster (like Flipkart) */}
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
+      <div className="bg-white rounded-2xl shadow-lg max-w-2xl w-full p-8 flex flex-col md:flex-row overflow-hidden">
+        {/* Left Poster */}
         <div className="hidden md:flex flex-col justify-center items-center bg-[#2874f0] text-white w-1/2 p-8">
           {step === "details" ? (
             <>
@@ -90,9 +78,9 @@ export default function LoginModal({ open, onClose }) {
             </>
           ) : (
             <>
-              <h2 className="text-3xl font-bold mb-3">Looks like you're new here!</h2>
+              <h2 className="text-3xl font-bold mb-3">Welcome!</h2>
               <p className="text-sm opacity-90">
-                Sign up with your mobile number to get started.
+                Sign in with your mobile number to continue.
               </p>
               <img
                 src="https://i.imgur.com/R8C6xHD.png"
@@ -104,17 +92,10 @@ export default function LoginModal({ open, onClose }) {
         </div>
 
         {/* Right Form */}
-        <div className="flex-1 p-8 relative">
-          <button
-            onClick={onClose}
-            className="absolute top-4 right-4 p-1 hover:bg-gray-100 rounded-full"
-          >
-            <X className="w-5 h-5 text-gray-700" />
-          </button>
-
+        <div className="flex-1 p-8">
           {step === "number" && (
             <>
-              <h2 className="text-2xl font-bold mb-6">Login or Signup</h2>
+              <h2 className="text-2xl font-bold mb-6">Login / Signup</h2>
               <input
                 type="number"
                 placeholder="Enter Mobile Number"
@@ -152,13 +133,7 @@ export default function LoginModal({ open, onClose }) {
             </>
           )}
 
-          {step === "details" && <UserDetailsForm onComplete={onClose} />}
-
-          <p className="text-xs text-gray-500 mt-4">
-            By continuing, you agree to our{" "}
-            <span className="text-[#2874f0] cursor-pointer">Terms of Use</span> and{" "}
-            <span className="text-[#2874f0] cursor-pointer">Privacy Policy</span>.
-          </p>
+          {step === "details" && <UserDetailsForm onComplete={handleDetailsComplete} />}
         </div>
       </div>
     </div>
