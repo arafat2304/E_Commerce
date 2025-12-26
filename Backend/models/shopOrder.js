@@ -43,6 +43,32 @@ const orderItemSchema = new mongoose.Schema({
     default: "NO",
   },
 
+  // 🔄 RETURN FLAGS (NEW)
+  returnRequested: {
+    type: Boolean,
+    default: false,
+  },
+
+  // predefined reason code
+  returnReason: {
+    type: String,
+    enum: [
+      "DAMAGED",
+      "DEFECTIVE",
+      "WRONG_ITEM",
+      "SIZE_ISSUE",
+      "NOT_AS_EXPECTED",
+      "OTHER",
+    ],
+    default: null,
+  },
+
+  // user written reason (only when OTHER)
+  customReturnReason: {
+    type: String,
+    default: null,
+  },
+
   type: {
     type: String,
     enum: ["product", "food"],

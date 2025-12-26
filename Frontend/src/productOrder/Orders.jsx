@@ -48,62 +48,70 @@ export default function Orders() {
       <h1 className="text-xl font-bold mb-4">My Orders</h1>
 
       {orders.map(order => {
-        const item = order.items?.[0];
+  const firstItem = order.items?.[0];
+  const extraCount = order.items.length - 1;
 
-        return (
-          <div
-            key={order._id}
-            className="flex items-center justify-between gap-4 bg-white border rounded-lg p-3 hover:bg-gray-50 transition"
-          >
-            {/* LEFT: Image + Name */}
-            <div className="flex items-center gap-4">
-              {/* 🖼️ Image */}
-              <div className="w-16 h-16 rounded-md overflow-hidden bg-gray-100 flex-shrink-0">
-                {item?.image ? (
-                  <img
-                    src={item.image}
-                    alt={item.name}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-gray-400">
-                    <Package />
-                  </div>
-                )}
-              </div>
-
-              {/* 🏷️ Name */}
-              <p className="font-medium text-gray-900">
-                {item?.name}
-              </p>
+  return (
+    <div
+      key={order._id}
+      className="flex items-center justify-between gap-4 bg-white border rounded-lg p-3 hover:bg-gray-50 transition"
+    >
+      {/* LEFT: Image + Name */}
+      <div className="flex items-center gap-4">
+        {/* 🖼️ Image */}
+        <div className="w-16 h-16 rounded-md overflow-hidden bg-gray-100 flex-shrink-0">
+          {firstItem?.image ? (
+            <img
+              src={firstItem.image}
+              alt={firstItem.name}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-gray-400">
+              <Package />
             </div>
+          )}
+        </div>
 
-            {/* RIGHT: Status + View more */}
-            <div className="flex items-center gap-4">
-              {/* 📦 Status */}
-              <span
-                className={`text-xs px-3 py-1 rounded-full font-medium capitalize ${
-                  order.status === "delivered"
-                    ? "bg-green-100 text-green-700"
-                    : order.status === "shipped"
-                    ? "bg-blue-100 text-blue-700"
-                    : "bg-orange-100 text-orange-700"
-                }`}
-              >
-                {order.status}
-              </span>
+        {/* 🏷️ Name + extra info */}
+        <div>
+          <p className="font-medium text-gray-900">
+            {firstItem?.name}
+          </p>
 
-              {/* 👉 View more */}
-              <button
-                onClick={() => navigate(`/orders/${order._id}`)}
-                className="text-sm text-[#FF6A00] font-medium hover:underline"
-              >
-                View more →
-              </button>
-            </div>
-          </div>
-        );
-      })}
+          {extraCount > 0 && (
+            <p className="text-xs text-gray-500">
+              + {extraCount} more item(s)
+            </p>
+          )}
+        </div>
+      </div>
+
+      {/* RIGHT: Status + View more */}
+      <div className="flex items-center gap-4">
+        <span
+          className={`text-xs px-3 py-1 rounded-full font-medium capitalize ${
+            order.status === "delivered"
+              ? "bg-green-100 text-green-700"
+              : order.status === "shipped"
+              ? "bg-blue-100 text-blue-700"
+              : "bg-orange-100 text-orange-700"
+          }`}
+        >
+          {order.status}
+        </span>
+
+        <button
+          onClick={() => navigate(`/orders/${order._id}`)}
+          className="text-sm text-[#FF6A00] font-medium hover:underline"
+        >
+          View more →
+        </button>
+      </div>
+    </div>
+  );
+})}
+
     </div>
   );
 }
