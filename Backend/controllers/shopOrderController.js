@@ -131,6 +131,105 @@ export const getOrderById = async (req, res) => {
 };
 
 
+export const cancelOrder = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { orderId } = req.params;
+
+    const order = await ShopOrder.findOne({ _id: orderId, userId });
+
+    if (!order) {
+      return res.status(404).json({ success: false, message: "Order not found" });
+    }
+
+    if (!["pending", "confirmed"].includes(order.status)) {
+      return res.json({
+        success: false,
+        message: "Order cannot be cancelled now",
+      });
+    }
+
+    order.status = "cancelled";
+    await order.save();
+
+    return res.json({
+      success: true,
+      message: "Order cancelled successfully",
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false });
+  }
+};
+
+
+export const requestReturn = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { orderId, itemId } = req.params;
+    const { reason, customReason } = req.body;
+
+    const order = await ShopOrder.findOne({ _id: orderId, userId });
+    if (!order) {
+      return res.status(404).json({ success: false });
+    }
+
+    if (order.status !== "delivered") {
+      return res.json({
+        success: false,
+        message: "Return allowed only after delivery",
+      });
+    }
+
+    const item = order.items.id(itemId);
+    if (!item) {
+      return res.status(404).json({ success: false });
+    }
+
+    if (item.returnRequested) {
+      return res.json({
+        success: false,
+        message: "Return already requested",
+      });
+    }
+
+    const strictReasons = ["DAMAGED", "DEFECTIVE", "WRONG_ITEM"];
+
+    // ❌ no return protection → strict reasons only
+    if (item.returnType === "NO") {
+      if (!strictReasons.includes(reason)) {
+        return res.json({
+          success: false,
+          message: "Return not allowed without return protection",
+        });
+      }
+    }
+
+    // OTHER reason needs text
+    if (reason === "OTHER" && !customReason) {
+      return res.json({
+        success: false,
+        message: "Custom reason required",
+      });
+    }
+
+    item.returnRequested = true;
+    item.returnReason = reason;
+    item.customReturnReason = reason === "OTHER" ? customReason : null;
+
+    await order.save();
+
+    return res.json({
+      success: true,
+      message: "Return request submitted",
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false });
+  }
+};
+
+
 
 /**
  * 🧾 Get all orders for a seller (shopkeeper)

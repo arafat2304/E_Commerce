@@ -1,5 +1,5 @@
 import express from "express";
-import { getSellerOrders, updateOrderStatus,getSellerOrderStats, createOrder,getMyOrders,getOrderById} from "../controllers/shopOrderController.js";
+import { cancelOrder,requestReturn,getSellerOrders, updateOrderStatus,getSellerOrderStats, createOrder,getMyOrders,getOrderById} from "../controllers/shopOrderController.js";
 import authShopkeeper from "../middlewares/authShopkeeper.js";
 import {verifyToken} from "../middlewares/authMiddleware.js"
 
@@ -12,6 +12,13 @@ router.get("/my-orders",verifyToken,getMyOrders)
 
 // ✅ specific order
 router.get("/:orderId",verifyToken, getOrderById);
+
+
+// cancel order
+router.patch("/cancel/:orderId", verifyToken, cancelOrder);
+//return order
+router.patch("/return/:orderId/:itemId", verifyToken, requestReturn);
+
 
 // GET all orders for this shopkeeper
 router.get("/my-orders",  authShopkeeper, getSellerOrders);

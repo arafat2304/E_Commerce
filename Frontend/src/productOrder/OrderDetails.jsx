@@ -3,6 +3,15 @@ import axios from "axios";
 import { useParams } from "react-router-dom";
 import { RotateCcw, PackageCheck } from "lucide-react";
 
+const RETURN_REASONS = [
+  "DAMAGED",
+  "DEFECTIVE",
+  "WRONG_ITEM",
+  "SIZE_ISSUE",
+  "NOT_AS_EXPECTED",
+  "OTHER",
+];
+
 export default function OrderDetails() {
   const { orderId } = useParams();
   const [order, setOrder] = useState(null);
@@ -10,30 +19,92 @@ export default function OrderDetails() {
 
   const token = localStorage.getItem("authToken");
 
-  useEffect(() => {
-    const fetchOrder = async () => {
-      try {
-        const res = await axios.get(
-          `http://localhost:5000/api/shoporder/${orderId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        if (res.data.success) {
-          setOrder(res.data.order);
+  const fetchOrder = async () => {
+    try {
+      const res = await axios.get(
+        `http://localhost:5000/api/shoporder/${orderId}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
         }
-      } catch (err) {
-        console.error("Order details error:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
+      );
 
+      if (res.data.success) {
+        setOrder(res.data.order);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchOrder();
   }, [orderId]);
+
+  /* ---------------- CANCEL ORDER ---------------- */
+  const handleCancelOrder = async () => {
+    if (!window.confirm("Are you sure you want to cancel this order?")) return;
+
+    try {
+      await axios.patch(
+        `http://localhost:5000/api/shoporder/cancel/${order._id}`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      alert("Order cancelled successfully");
+      fetchOrder();
+    } catch (err) {
+      alert("Cancel failed");
+    }
+  };
+
+  /* ---------------- RETURN ITEM ---------------- */
+  const handleReturn = async (item) => {
+    let reason = null;
+    let customReason = null;
+
+    // 🔹 Decide allowed reasons
+    const allowedReasons =
+      item.returnType === "YES"
+        ? RETURN_REASONS
+        : ["DAMAGED", "DEFECTIVE", "WRONG_ITEM"];
+
+    reason = prompt(
+      `Select return reason:\n${allowedReasons.join(", ")}`
+    );
+
+    if (!allowedReasons.includes(reason)) {
+      alert("Invalid return reason");
+      return;
+    }
+
+    if (reason === "OTHER") {
+      customReason = prompt("Please write your return reason");
+      if (!customReason) {
+        alert("Custom reason is required");
+        return;
+      }
+    }
+
+    try {
+      await axios.patch(
+        `http://localhost:5000/api/shoporder/return/${order._id}/${item._id}`,
+        { reason, customReason },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      alert("Return request submitted");
+      fetchOrder();
+    } catch (err) {
+      alert("Return request failed");
+    }
+  };
 
   if (loading) {
     return <div className="p-6 text-center">Loading order details...</div>;
@@ -54,9 +125,18 @@ export default function OrderDetails() {
               Order ID: {order._id}
             </p>
             <p className="text-sm text-gray-500 mt-1">
-              Ordered on{" "}
-              {new Date(order.createdAt).toDateString()}
+              Ordered on {new Date(order.createdAt).toDateString()}
             </p>
+
+            {/* ❌ Cancel Order */}
+            {["pending", "confirmed"].includes(order.status) && (
+              <button
+                onClick={handleCancelOrder}
+                className="mt-3 text-red-600 font-medium hover:underline"
+              >
+                Cancel Order
+              </button>
+            )}
           </div>
 
           {/* Status Badge */}
@@ -66,6 +146,8 @@ export default function OrderDetails() {
                 ? "bg-green-100 text-green-700"
                 : order.status === "shipped"
                 ? "bg-blue-100 text-blue-700"
+                : order.status === "cancelled"
+                ? "bg-red-100 text-red-700"
                 : "bg-orange-100 text-orange-700"
             }`}
           >
@@ -83,11 +165,10 @@ export default function OrderDetails() {
       <div className="space-y-4">
         {order.items.map(item => (
           <div
-            key={item.productId}
+            key={item._id}
             className="flex gap-5 bg-white border rounded-xl p-4 shadow-sm"
           >
-            {/* Image */}
-            <div className="w-28 h-28 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
+            <div className="w-28 h-28 rounded-lg overflow-hidden bg-gray-100">
               <img
                 src={item.image}
                 alt={item.name}
@@ -95,14 +176,11 @@ export default function OrderDetails() {
               />
             </div>
 
-            {/* Info */}
             <div className="flex-1">
               <p className="font-medium text-lg">{item.name}</p>
-
-              <p className="text-sm text-gray-500 mt-1">
+              <p className="text-sm text-gray-500">
                 Quantity: {item.quantity}
               </p>
-
               <p className="mt-2 text-lg font-semibold">
                 ₹{item.total}
               </p>
@@ -112,12 +190,21 @@ export default function OrderDetails() {
                   Return Protection Applied
                 </span>
               )}
+
+              {item.returnRequested && (
+                <p className="mt-2 text-sm text-orange-600">
+                  Return requested
+                </p>
+              )}
             </div>
 
-            {/* Action */}
+            {/* 🔄 Return Button */}
             {order.status === "delivered" &&
-              item.returnType === "YES" && (
-                <button className="self-center text-orange-600 font-medium flex items-center gap-1 hover:underline">
+              !item.returnRequested && (
+                <button
+                  onClick={() => handleReturn(item)}
+                  className="self-center text-orange-600 font-medium flex items-center gap-1 hover:underline"
+                >
                   <RotateCcw className="w-4 h-4" />
                   Request Return
                 </button>
